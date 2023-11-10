@@ -6,10 +6,10 @@ x-airflow-common:
   environment:
     &airflow-common-env
     AIRFLOW__CORE__EXECUTOR: CeleryExecutor
-    AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
+    AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://${_AIRFLOW_DB_USER_USERNAME:-airflow}:${_AIRFLOW_DB_USER_PASSWORD:-airflow}@postgres/airflow
     # For backward compatibility, with Airflow <2.3
-    AIRFLOW__CORE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
-    AIRFLOW__CELERY__RESULT_BACKEND: db+postgresql://airflow:airflow@postgres/airflow
+    AIRFLOW__CORE__SQL_ALCHEMY_CONN: postgresql+psycopg2://${_AIRFLOW_DB_USER_USERNAME:-airflow}:${_AIRFLOW_DB_USER_PASSWORD:-airflow}@postgres/airflow
+    AIRFLOW__CELERY__RESULT_BACKEND: db+postgresql://${_AIRFLOW_DB_USER_USERNAME:-airflow}:${_AIRFLOW_DB_USER_PASSWORD:-airflow}@postgres/airflow
     AIRFLOW__CELERY__BROKER_URL: redis://:@redis:6379/0
     AIRFLOW__CORE__FERNET_KEY: ''
     AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: 'true'
@@ -23,6 +23,8 @@ x-airflow-common:
     # WARNING: Use _PIP_ADDITIONAL_REQUIREMENTS option ONLY for a quick checks
     # for other purpose (development, test and especially production usage) build/extend Airflow image.
     _PIP_ADDITIONAL_REQUIREMENTS: ${_PIP_ADDITIONAL_REQUIREMENTS:-}
+  env_file:
+    - .env
   volumes:
     - ${AIRFLOW_PROJ_DIR:-.}/dags:/opt/airflow/dags
     - ${AIRFLOW_PROJ_DIR:-.}/logs:/opt/airflow/logs
@@ -42,13 +44,13 @@ services:
   postgres:
     image: postgres:13
     environment:
-      POSTGRES_USER: airflow
-      POSTGRES_PASSWORD: airflow
+      POSTGRES_USER: ${_AIRFLOW_DB_USER_USERNAME:-airflow}
+      POSTGRES_PASSWORD: ${_AIRFLOW_DB_USER_PASSWORD:-airflow}
       POSTGRES_DB: airflow
     volumes:
       - postgres-db-volume:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD", "pg_isready", "-U", "airflow"]
+      test: ["CMD", "pg_isready", "-U", "${_AIRFLOW_DB_USER_USERNAME:-airflow}"]
       interval: 10s
       retries: 5
       start_period: 5s
@@ -210,6 +212,8 @@ services:
       _AIRFLOW_WWW_USER_USERNAME: ${_AIRFLOW_WWW_USER_USERNAME:-airflow}
       _AIRFLOW_WWW_USER_PASSWORD: ${_AIRFLOW_WWW_USER_PASSWORD:-airflow}
       _PIP_ADDITIONAL_REQUIREMENTS: ''
+    env_file:
+      - .env
     user: "0:0"
     volumes:
       - ${AIRFLOW_PROJ_DIR:-.}:/sources
