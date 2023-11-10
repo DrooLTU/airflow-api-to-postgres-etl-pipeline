@@ -1,0 +1,14 @@
+*__pycache__/
+*.pytest_cache
+venv/
+transformer_lite.egg-info
+.env
+.vscode/
+data
+config
+backups
+logs
+plugins
+turing-m2-s4-firebase-adminsdk-exole-07e7cc79ee.json
+debug.py
+.pylintrc
