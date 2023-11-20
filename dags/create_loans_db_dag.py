@@ -13,7 +13,7 @@ with DAG(
     'create_loans_db_dag',
     default_args=default_args,
     description='DAG to create loans database in PostgreSQL',
-    schedule_interval=timedelta(days=1),
+    schedule=timedelta(days=1),
 ) as dag:
 
     create_loans_db_task = PostgresOperator(

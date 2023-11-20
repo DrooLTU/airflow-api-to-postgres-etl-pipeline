@@ -23,19 +23,18 @@ with DAG(
     "fetch_loan_data_dag",
     default_args=default_args,
     description="DAG to create loans database in PostgreSQL",
-    schedule_interval=timedelta(days=1),
+    schedule=timedelta(days=1),
 ) as dag:
     fetch_data = DockerOperator(
         task_id="fetch_data",
-        image="my-docker-image/name-here",
+        image="justinaslorjus/kaggle_fetch_dataset:1.0-3.11",
         command=[
             "fetch-data",
-            "--input_path",
-            "/data/input/loans/{{ds}}.json",
+            '--dataset_name',
+            'vikasukani/loan-eligible-dataset',
             "--output_path",
-            "/data/output/loans/{{ds}}.csv",
+            "/data/output/loans/",
         ],
-        api_version="auto",
         mounts=["/tmp/airflow/data:/data"],
     )
 
