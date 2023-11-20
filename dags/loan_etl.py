@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 # CREATE TABLES
 default_args = {
     "owner": "airflow",
-    "start_date": datetime(2023, 1, 1),
+    "start_date": datetime.now(),
     "retries": 1,
     "retry_delay": timedelta(minutes=5),
 }
@@ -36,9 +36,7 @@ with DAG(
             "/data/output/loans/{{ds}}.csv",
         ],
         api_version="auto",
-        auto_remove=True,
-        volumes=["/tmp/airflow/data:/data"],
-        network_mode="bridge",
+        mounts=["/tmp/airflow/data:/data"],
     )
 
 if __name__ == "__main__":

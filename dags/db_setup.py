@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 
 default_args = {
     'owner': 'airflow',
-    'start_date': datetime(2023, 1, 1),
+    'start_date': datetime.now(),
     'retries': 1,
     'retry_delay': timedelta(minutes=5),
 }
@@ -18,7 +18,7 @@ with DAG(
 
     create_loans_db_task = PostgresOperator(
         task_id='create_loans_db_task',
-        sql="CREATE DATABASE IF NOT EXISTS loans;",
+        sql="CREATE DATABASE loans;",
         postgres_conn_id='MainPG',
         autocommit=True,
     )
