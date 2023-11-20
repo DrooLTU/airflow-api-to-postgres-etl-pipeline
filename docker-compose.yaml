@@ -46,11 +46,13 @@ services:
     environment:
       POSTGRES_USER: ${_AIRFLOW_DB_USER_USERNAME:-airflow}
       POSTGRES_PASSWORD: ${_AIRFLOW_DB_USER_PASSWORD:-airflow}
-      POSTGRES_DB: airflow
+      POSTGRES_DB: ${_AIRFLOW_DB_NAME:-airflow}
+    ports:
+      - "5432:5432"
     volumes:
       - postgres-db-volume:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD", "pg_isready", "-U", "${_AIRFLOW_DB_USER_USERNAME:-airflow}"]
+      test: ["CMD", "pg_isready", "-U", "${_AIRFLOW_DB_USER_USERNAME:-airflow}", "-d", "${_AIRFLOW_DB_NAME:-airflow}"]
       interval: 10s
       retries: 5
       start_period: 5s
