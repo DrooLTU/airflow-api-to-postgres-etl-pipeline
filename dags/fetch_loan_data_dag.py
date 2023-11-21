@@ -1,6 +1,15 @@
+import os
+import glob
+
 from airflow import DAG
 from airflow.providers.docker.operators.docker import DockerOperator
+from airflow.operators.python import PythonOperator
+from airflow.exceptions import AirflowException
+
 from docker.types import Mount
+
+import pandas as pd
+
 from datetime import datetime, timedelta
 
 # SET UP DB OPERATOR
@@ -14,7 +23,33 @@ default_args = {
 
 # TWO OF THESE SO MUST BE MODULAR:
 # NEEDS A DOCKER OPERATOR TO RUN PYTHON SCRIPT IN CONTAINER
+def _transform_data(root_path:str = '/opt/airflow/data', output_path:str = '/opt/airflow/data'):
+    """
+    Transfrom loan data into star schema.
 
+    Args:
+    root_path: Path to the folder to be compressed.
+    output_zip: Path where to store the result.
+    filename: Name of the compressed file WITHOUT extension.
+    """
+    if not os.path.exists(root_path):
+        raise AirflowException(f"The folder {root_path} does not exist.")
+    
+    if not os.path.exists(output_path):
+        print(f'Creating the folder {output_path}.')
+        os.makedirs(output_path)
+    dfs = []
+    folder_path = os.path.join(root_path, '*.csv')
+    csv_files = glob.glob(folder_path)
+
+    for csv_file in csv_files:
+        df = pd.read_csv(csv_file)
+        dfs.append(df)
+
+
+    combined_df = pd.concat(dfs, ignore_index=True)
+
+    print(combined_df)
 
 # TRANSFORM DATA TO STAR SCHEMA
 
@@ -36,11 +71,20 @@ with DAG(
             '--output_path',
             '/data',
         ],
+        auto_remove=True,
         mount_tmp_dir=False,
         mounts=[
-            Mount(source='kaggle-data-volume', target="/data", type="volume"),
+            Mount(source='jukaral-de315_kaggle-data-volume', target="/data", type="volume"),
         ]
     )
+
+    transform_data = PythonOperator(
+        task_id="transform_data",
+        python_callable=_transform_data,
+        op_kwargs={"output_path": "/opt/airflow/data/transformed"},
+    )
+
+    fetch_data >> transform_data
 
 if __name__ == "__main__":
     dag.cli()

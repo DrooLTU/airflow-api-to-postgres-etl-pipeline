@@ -53,5 +53,11 @@ To run this project locally, follow these steps:
         - Conn id: ```fs_default```
         - Leave everything else blank.
 
+    - Then create a Postgres connection with the following:
+        - Conn id: ```MainPG```
+        - Host: ```postgres```
+        - Port: ```5432```
+        - Enter your username and password you set up in the .env
+
     - Import the provided default 'variables.json' to your Variables for quick start.
     You'll have to edit them as needed.
