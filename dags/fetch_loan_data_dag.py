@@ -1,5 +1,6 @@
 from airflow import DAG
 from airflow.providers.docker.operators.docker import DockerOperator
+from docker.types import Mount
 from datetime import datetime, timedelta
 
 # SET UP DB OPERATOR
@@ -7,7 +8,7 @@ from datetime import datetime, timedelta
 default_args = {
     "owner": "airflow",
     "start_date": datetime.now(),
-    "retries": 1,
+    "retries": 0,
     "retry_delay": timedelta(minutes=5),
 }
 
@@ -29,13 +30,16 @@ with DAG(
         task_id="fetch_data",
         image="justinaslorjus/kaggle_fetch_dataset:1.0-3.11",
         command=[
-            "fetch-data",
+            'fetch-data',
             '--dataset_name',
             'vikasukani/loan-eligible-dataset',
-            "--output_path",
-            "/data/output/loans/",
+            '--output_path',
+            '/data',
         ],
-        mounts=["/tmp/airflow/data:/data"],
+        mount_tmp_dir=False,
+        mounts=[
+            Mount(source='kaggle-data-volume', target="/data", type="volume"),
+        ]
     )
 
 if __name__ == "__main__":
