@@ -1,5 +1,6 @@
 import os
 import glob
+from dotenv import load_dotenv
 
 from airflow import DAG
 from airflow.providers.docker.operators.docker import DockerOperator
@@ -14,6 +15,17 @@ from datetime import datetime, timedelta
 
 # SET UP DB OPERATOR
 # CREATE TABLES
+# TWO OF THESE SO MUST BE MODULAR:
+# NEEDS A DOCKER OPERATOR TO RUN PYTHON SCRIPT IN CONTAINER
+# TRANSFORM DATA TO STAR SCHEMA
+# WRITE DATA TO DB
+
+load_dotenv()
+
+PROJECT_NAME = os.getenv("COMPOSE_PROJECT_NAME")
+VOLUME_NAME = f"{PROJECT_NAME}_kaggle-data-volume"
+
+
 default_args = {
     "owner": "airflow",
     "start_date": datetime.now(),
@@ -21,16 +33,14 @@ default_args = {
     "retry_delay": timedelta(minutes=5),
 }
 
-# TWO OF THESE SO MUST BE MODULAR:
-# NEEDS A DOCKER OPERATOR TO RUN PYTHON SCRIPT IN CONTAINER
+
 def _transform_data(root_path:str = '/opt/airflow/data', output_path:str = '/opt/airflow/data'):
     """
     Transfrom loan data into star schema.
 
     Args:
     root_path: Path to the folder to be compressed.
-    output_zip: Path where to store the result.
-    filename: Name of the compressed file WITHOUT extension.
+    output_path: Path where to store the result.
     """
     if not os.path.exists(root_path):
         raise AirflowException(f"The folder {root_path} does not exist.")
@@ -51,9 +61,7 @@ def _transform_data(root_path:str = '/opt/airflow/data', output_path:str = '/opt
 
     print(combined_df)
 
-# TRANSFORM DATA TO STAR SCHEMA
 
-# WRITE DATA TO DB
 
 with DAG(
     "fetch_loan_data_dag",
@@ -74,7 +82,7 @@ with DAG(
         auto_remove=True,
         mount_tmp_dir=False,
         mounts=[
-            Mount(source='jukaral-de315_kaggle-data-volume', target="/data", type="volume"),
+            Mount(source=VOLUME_NAME, target="/data", type="volume"),
         ]
     )
 
