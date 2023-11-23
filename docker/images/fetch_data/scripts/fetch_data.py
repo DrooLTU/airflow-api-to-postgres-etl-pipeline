@@ -5,6 +5,7 @@ import kaggle
 @click.command()
 @click.option('--dataset_name', help='Name of the Kaggle dataset to download')
 @click.option('--output_path', default='.', help='Path to the output directory')
+
 def download_kaggle_dataset(dataset_name, output_path):
     """
     Download files from a Kaggle dataset.

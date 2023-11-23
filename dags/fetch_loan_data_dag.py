@@ -6,6 +6,7 @@ from airflow import DAG
 from airflow.providers.docker.operators.docker import DockerOperator
 from airflow.operators.python import PythonOperator
 from airflow.exceptions import AirflowException
+from airflow.models import Variable
 
 from docker.types import Mount
 
@@ -26,6 +27,10 @@ PROJECT_NAME = os.getenv("COMPOSE_PROJECT_NAME")
 VOLUME_NAME = f"{PROJECT_NAME}_kaggle-data-volume"
 
 
+KAGGLE_API_KEY = Variable.get("kaggle_api_key", default_var=None)
+KAGGLE_API_USERNAME = Variable.get("kaggle_api_username", default_var=None)
+
+
 default_args = {
     "owner": "airflow",
     "start_date": datetime.now(),
@@ -34,7 +39,9 @@ default_args = {
 }
 
 
-def _transform_data(root_path:str = '/opt/airflow/data', output_path:str = '/opt/airflow/data'):
+def _transform_data(
+    root_path: str = "/opt/airflow/data", output_path: str = "/opt/airflow/data"
+):
     """
     Transfrom loan data into star schema.
 
@@ -44,23 +51,21 @@ def _transform_data(root_path:str = '/opt/airflow/data', output_path:str = '/opt
     """
     if not os.path.exists(root_path):
         raise AirflowException(f"The folder {root_path} does not exist.")
-    
+
     if not os.path.exists(output_path):
-        print(f'Creating the folder {output_path}.')
+        print(f"Creating the folder {output_path}.")
         os.makedirs(output_path)
     dfs = []
-    folder_path = os.path.join(root_path, '*.csv')
+    folder_path = os.path.join(root_path, "*.csv")
     csv_files = glob.glob(folder_path)
 
     for csv_file in csv_files:
         df = pd.read_csv(csv_file)
         dfs.append(df)
 
-
     combined_df = pd.concat(dfs, ignore_index=True)
 
     print(combined_df)
-
 
 
 with DAG(
@@ -73,17 +78,17 @@ with DAG(
         task_id="fetch_data",
         image="justinaslorjus/kaggle_fetch_dataset:1.0-3.11",
         command=[
-            'fetch-data',
-            '--dataset_name',
-            'vikasukani/loan-eligible-dataset',
-            '--output_path',
-            '/data',
+            "/bin/bash",
+            "-c",
+            f"export KAGGLE_USERNAME={KAGGLE_API_USERNAME} && "
+            f"export KAGGLE_KEY={KAGGLE_API_KEY} && "
+            "fetch-data --dataset_name vikasukani/loan-eligible-dataset --output_path /data",
         ],
         auto_remove=True,
         mount_tmp_dir=False,
         mounts=[
             Mount(source=VOLUME_NAME, target="/data", type="volume"),
-        ]
+        ],
     )
 
     transform_data = PythonOperator(

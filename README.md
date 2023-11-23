@@ -59,5 +59,5 @@ To run this project locally, follow these steps:
         - Port: ```5432```
         - Enter your username and password you set up in the .env
 
-    - Import the provided default 'variables.json' to your Variables for quick start.
+    - Import the provided default 'variables.json' to your  Airflow Variables for quick start.
     You'll have to edit them as needed.
