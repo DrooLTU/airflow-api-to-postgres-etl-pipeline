@@ -48,7 +48,7 @@ To run this project locally, follow these steps:
         - Enter your username and password you set up in the .env
 
     - Create a Postgres connection with the following:
-        - Conn id: ```LoanDB```
+        - Conn id: ```LoansDB```
         - Database: ```loans```
         - Host: ```postgres```
         - Port: ```5432```
@@ -56,3 +56,9 @@ To run this project locally, follow these steps:
 
     - Import the provided default 'variables.json' to your Airflow Variables for quick start.
     You'll have to edit them as needed.
+
+
+
+## What's left to improve
+
+- Moving more hardcoded values to Airflow Variables
