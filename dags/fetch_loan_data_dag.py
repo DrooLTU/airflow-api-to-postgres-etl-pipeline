@@ -19,13 +19,6 @@ from sqlalchemy import create_engine
 
 from datetime import datetime, timedelta
 
-# SET UP DB OPERATOR
-# CREATE TABLES
-# TWO OF THESE SO MUST BE MODULAR:
-# NEEDS A DOCKER OPERATOR TO RUN PYTHON SCRIPT IN CONTAINER
-# TRANSFORM DATA TO STAR SCHEMA
-# WRITE DATA TO DB
-
 load_dotenv()
 
 PROJECT_NAME = os.getenv("COMPOSE_PROJECT_NAME")
