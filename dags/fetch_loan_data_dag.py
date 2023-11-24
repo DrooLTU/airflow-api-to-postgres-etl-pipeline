@@ -85,20 +85,19 @@ def _transform_data(root_path: str = "/opt/airflow/data", output_path: str = "/o
     for csv_file in csv_files:
         df = pd.read_csv(csv_file)
         table_name_root = os.path.splitext(os.path.basename(csv_file))[0]
-        # Fact Table
-        fact_table_df = df[['Loan_ID', 'ApplicantIncome', 'CoapplicantIncome', 'LoanAmount', 'Loan_Amount_Term', 'Credit_History', 'Property_Area']]
-        fact_table_df.to_sql(f'{table_name_root}_fact_table', engine, if_exists='replace', index=False)
 
-        # Borrower Dimension Table
+        fact_table_df = df[['Loan_ID', 'LoanAmount', 'Loan_Amount_Term', 'Credit_History']]
+        fact_table_df.set_index('Loan_ID', inplace=True)
+        fact_table_df.to_sql(f'{table_name_root}_fact_table', engine, if_exists='replace', index=True)
+
         borrower_df = df[['Loan_ID', 'Gender', 'Married', 'Dependents', 'Education', 'Self_Employed']]
-        borrower_df.drop_duplicates(subset='Loan_ID', inplace=True)  # Deduplicate based on Loan_ID
         borrower_df.to_sql(f'{table_name_root}_borrower_dimension', engine, if_exists='replace', index=False)
 
-        # Location Dimension Table
-        location_df = df[['Property_Area']]
-        location_df.drop_duplicates(inplace=True)  # Deduplicate
-        location_df.to_sql(f'{table_name_root}_location_dimension', engine, if_exists='replace', index=False)
+        income_df = df[['Loan_ID', 'ApplicantIncome', 'CoapplicantIncome']]
+        income_df.to_sql(f'{table_name_root}_income_dimension', engine, if_exists='replace', index=False)
 
+        location_df = df[['Loan_ID', 'Property_Area']]
+        location_df.to_sql(f'{table_name_root}_location_dimension', engine, if_exists='replace', index=False)
 
     print("Data written to database")
 
