@@ -79,18 +79,26 @@ def _transform_data(root_path: str = "/opt/airflow/data", output_path: str = "/o
         df = pd.read_csv(csv_file)
         table_name_root = os.path.splitext(os.path.basename(csv_file))[0]
 
+        df_name = f'{table_name_root}_fact_table'
         fact_table_df = df[['Loan_ID', 'LoanAmount', 'Loan_Amount_Term', 'Credit_History']]
         fact_table_df.set_index('Loan_ID', inplace=True)
-        fact_table_df.to_sql(f'{table_name_root}_fact_table', engine, if_exists='replace', index=True)
+        fact_table_df.to_sql(df_name, engine, if_exists='replace', index=True)
+        fact_table_df.to_csv(f'{output_path}/{df_name}.csv', index=True)
 
+        df_name = f'{table_name_root}_borrower_dimension'
         borrower_df = df[['Loan_ID', 'Gender', 'Married', 'Dependents', 'Education', 'Self_Employed']]
         borrower_df.to_sql(f'{table_name_root}_borrower_dimension', engine, if_exists='replace', index=False)
+        borrower_df.to_csv(f'{output_path}/{df_name}.csv', index=True)
 
+        df_name = f'{table_name_root}_income_dimension'
         income_df = df[['Loan_ID', 'ApplicantIncome', 'CoapplicantIncome']]
         income_df.to_sql(f'{table_name_root}_income_dimension', engine, if_exists='replace', index=False)
+        income_df.to_csv(f'{output_path}/{df_name}.csv', index=True)
 
+        df_name = f'{table_name_root}_location_dimension'
         location_df = df[['Loan_ID', 'Property_Area']]
         location_df.to_sql(f'{table_name_root}_location_dimension', engine, if_exists='replace', index=False)
+        location_df.to_csv(f'{output_path}/{df_name}.csv', index=True)
 
     print("Data written to database")
 
