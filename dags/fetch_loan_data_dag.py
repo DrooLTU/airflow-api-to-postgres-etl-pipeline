@@ -48,8 +48,10 @@ def _check_postgres_db_exists(**kwargs):
     with conn.cursor() as cursor:
         cursor.execute(query)
         result = cursor.fetchone()
-
-    return result is not None
+    db_exists = result is not None
+    kwargs['ti'].xcom_push(key='check_db_result', value=db_exists)
+    
+    return db_exists
 
 
 def _transform_data(root_path: str = "/opt/airflow/data", output_path: str = "/opt/airflow/data", **kwargs):
@@ -126,7 +128,7 @@ with DAG(
 
     branch_task = BranchPythonOperator(
         task_id='branch_task',
-        python_callable=lambda **kwargs: 'create_loans_db_task' if kwargs['ti'].xcom_push(key='check_db_result', value=False) is False else 'fetch_data_task',
+        python_callable=lambda **kwargs: 'create_loans_db_task' if kwargs['ti'].xcom_pull(key='check_db_result') is False else 'fetch_data_task',
         provide_context=True,
         dag=dag,
     )
