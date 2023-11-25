@@ -31,14 +31,19 @@ To run this project locally, follow these steps:
     cd jukaral-DE3.1.5
     ```
 
-3. **Start the Docker Containers:**
+3. **Provide environment variables:**
+
+    - Fill out the provided ```.env_example``` and rename it to ```.env```.
+    - YOu can use the provided ```keygen.py``` script to generate the Fernet key.
+
+4. **Start the Docker Containers:**
     - Run the following command in your terminal, from the root of the project:
 
     ```bash
     docker compose up
     ```
 
-4. **Variables and connections:**
+5. **Variables and connections:**
 
     - Create a Postgres connection with the following:
         - Conn id: ```MainPG```
